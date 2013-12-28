@@ -8,11 +8,7 @@
  */
 
 var fs  = require("fs");
-var inputFile = process.argv[2]
-
-var input = fs.readFileSync(inputFile)		// Returns contents of input file
-  .toString()								// Converts contents to String type
-  .split('\n');								// Data is now an array of rounds
+var inputFile = process.argv[2];
 
 var lineStorage = {
 	N: 0,						// Max number of lines stored
@@ -21,11 +17,11 @@ var lineStorage = {
 	lowestPos: undefined		// Position of shortest line
 };
 
-input.forEach(function(line, num){
+fs.readFileSync(inputFile).toString().split('\n').forEach(function(line, num){
 	if (line == "") return;
 
     if (num == 0){
-    	lineStorage.N = line;
+    	lineStorage.N = parseInt(line, 10);
     	return;
     }
 
@@ -34,25 +30,22 @@ input.forEach(function(line, num){
     	lineStorage.lowestLength = line.length
     	lineStorage.lowestPos = 0;
     	lineStorage.lines.push(line);
-    } else if (line.length > lineStorage.lowestLength) {
-    	// Line is longer than shortest line stored, so either:
-    	if (lineStorage.lines.length < lineStorage.N){
-    		// Storage is not full, so simply push to the end
-    		lineStorage.lines.push(line);
-    	} else {
-    		// Storage is full, so replace with shortest line
-    		lineStorage.lines[lowestPos] = line;
+    } else if (lineStorage.lines.length < lineStorage.N) {
+        // Storage is not full, so simply push to the end
+        lineStorage.lines.push(line);
+    } else {
+        // Storage is full, so replace with shortest line
+        lineStorage.lines[lineStorage.lowestPos] = line;
 
-    		// Make sure we keep track of shortest length / pos
-    		console.log(lineStorage.lines);
-    		lineStorage.lines.forEach(function(v, i){
-    			if (v.length < lineStorage.lowestLength){
-    				lineStorage.lowestLength = v.length;
-    				lineStorage.lowestPos = i;
-    			}
-    		})
-    	}
     }
+
+    // Make sure we keep track of shortest length / pos
+    lineStorage.lines.forEach(function(v, i){
+        if (v.length < lineStorage.lowestLength){
+            lineStorage.lowestLength = v.length;
+            lineStorage.lowestPos = i;
+        }
+    });
 });
 
 // Sort lines and print
