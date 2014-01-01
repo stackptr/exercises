@@ -8,49 +8,48 @@
  */
 
 var fs  = require("fs");
-var inputFile = process.argv[2];
 
-var lineStorage = {
-	N: 0,						// Max number of lines stored
-	lines: [],					// Array of stored lines
-	lowestLength: undefined,	// Length of shortest line
-	lowestPos: undefined		// Position of shortest line
+// Assuming array is sorted, find insertion point given comparator
+function findInsertionPoint(arr, v, comp){
+    var low = 0,
+        high = arr.length;
+    while (low < high) {
+        mid = parseInt((low+high)/2);
+        c = comp(arr[mid], v);
+        if (c < 0)
+            low = mid + 1;
+        else if (c > 0)
+            high = mid;
+        else
+            return mid;
+    }
+    return low;
+}
+
+var lines = []; // Store lines
+
+lines.add = function(v){
+    this.splice ( findInsertionPoint(this, v, function (a, b){
+        return b.length - a.length;
+    }), 0, v);
 };
 
-fs.readFileSync(inputFile).toString().split('\n').forEach(function(line, num){
-	if (line == "") return;
+var N = undefined;
 
-    if (num == 0){
-    	lineStorage.N = parseInt(line, 10);
-    	return;
-    }
+fs.readFileSync(process.argv[2])
+    .toString()
+    .split('\n')
+    .forEach(function(line, num){
+        if (line == "") return;
 
-    // Check length of current line against lowest length stored line
-    if (lineStorage.lowestLength == undefined){ // Initialize storage object
-    	lineStorage.lowestLength = line.length
-    	lineStorage.lowestPos = 0;
-    	lineStorage.lines.push(line);
-    } else if (lineStorage.lines.length < lineStorage.N) {
-        // Storage is not full, so simply push to the end
-        lineStorage.lines.push(line);
-    } else {
-        // Storage is full, so replace with shortest line
-        lineStorage.lines[lineStorage.lowestPos] = line;
-
-    }
-
-    // Make sure we keep track of shortest length / pos
-    lineStorage.lines.forEach(function(v, i){
-        if (v.length < lineStorage.lowestLength){
-            lineStorage.lowestLength = v.length;
-            lineStorage.lowestPos = i;
+        if (num == 0){
+            N = parseInt(line, 10);
+            return;
         }
-    });
-});
 
-// Sort lines and print
-lineStorage.lines.sort(function(a, b){
-	return b.length - a.length; // Sort in descending order by length
-}).forEach(function(v){
-	console.log(v);
-})
+        lines.add(line);
+    });
+
+for(var i = 0; i < N; i++){
+    console.log(lines[i]);
+}
