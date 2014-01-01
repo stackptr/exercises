@@ -24,31 +24,14 @@ function processRound(round){
 	if (round == "") return;
 	
 	// Convert string into an array of numbers
-	var numbers = round.split(' ').map( function(s){
-		return parseInt(s, 10);
+	var numbers = round.split(' ').map(Number);
+	var original = numbers.slice();
+
+	var numbers = numbers.sort(function(a,b){
+		return a-b;
+	}).filter( function(v, i, self){
+		return self.indexOf(v) == self.lastIndexOf(v);
 	});
 
-	var unique = []; // Keeps track of unique numbers and their respective position
-	numbers.forEach(function(v, i){
-		if (numbers.indexOf(v) == numbers.lastIndexOf(v)){
-			unique.push([v, i+1]);
-		}
-	});
-
-	// If no unique numbers, print 0 and exit
-	if (unique.length == 0){
-		console.log(0);
-		return;
-	}
-
-	// Otherwise, find the lowest number
-	var lowest = [];
-	unique.forEach(function(v, i){
-		if (unique[i][0] < lowest || lowest.length == 0){
-			lowest = unique[i];
-		}
-	})
-
-	console.log(lowest[1]);
-
+	console.log(original.indexOf(numbers[0])+1);
 }
