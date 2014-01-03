@@ -69,17 +69,12 @@ fs.readFileSync(process.argv[2])
 			x1: data[1],
 			y1: data[2],
 			x2: data[3],
-			y2: data[4]
+			y2: data[4],
+			intersections: []
 		};
 	});
 
-var bridgeNums = Object.keys(Bridges).map(function(v){
-	return parseInt(v, 10);
-})
-
-// Create an intersection graph consisting of pairs of
-// intersecting bridges
-var graph = [];
+// Check each pair of bridges to populate the intersection list
 for (var i = 0; i < bridgeNums.length; i++){
 	for (var j = i+1; j < bridgeNums.length; j++){
 		if (checkIntersect(Bridges[bridgeNums[i]], Bridges[bridgeNums[j]]))
