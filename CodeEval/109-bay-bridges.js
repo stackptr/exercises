@@ -75,10 +75,16 @@ fs.readFileSync(process.argv[2])
 	});
 
 // Check each pair of bridges to populate the intersection list
+var bridgeNums = Object.keys(Bridges).map(function(v){
+	return parseInt(v, 10);
+})
 for (var i = 0; i < bridgeNums.length; i++){
 	for (var j = i+1; j < bridgeNums.length; j++){
-		if (checkIntersect(Bridges[bridgeNums[i]], Bridges[bridgeNums[j]]))
+		if (checkIntersect(Bridges[bridgeNums[i]], Bridges[bridgeNums[j]])){
+			Bridges[bridgeNums[i]].intersections.push(bridgeNums[j]);
+			Bridges[bridgeNums[j]].intersections.push(bridgeNums[i]);
 			graph.push([bridgeNums[i], bridgeNums[j]]);
+		}
 	}
 }
 
