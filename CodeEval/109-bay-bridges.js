@@ -48,18 +48,13 @@ function checkIntersect(Bridge1, Bridge2){
 	return !(((crossA < 0) == (crossB < 0)) && ((crossC < 0) == (crossD < 0)));
 }
 
-function removeBridge(num){
-	for (var i = 0; i < Bridges.length; i++){
-		if (Bridges[i] != undefined && Bridges[i].num == num)
-			Bridges[i] = undefined;
-	}
-}
-
 // Parse input into bridge objects
-var Bridges = fs.readFileSync(process.argv[2])
+var Bridges = {};
+
+fs.readFileSync(process.argv[2])
 	.toString()
 	.split('\n')
-	.map(function(data){
+	.forEach(function(data){
 		if (data == "") return;
 
 		// Extract using regex
@@ -70,63 +65,77 @@ var Bridges = fs.readFileSync(process.argv[2])
 			return parseFloat(v, 10);
 		});
 
-		// Push a bridge object to an array of Bridges
-		return {
-			num: data[0],
+		Bridges[data[0]] = {
 			x1: data[1],
 			y1: data[2],
 			x2: data[3],
 			y2: data[4]
 		};
-	})
-	.filter(function(v){
-		return v != undefined; // Get rid of undefined elements
 	});
 
+var bridgeNums = Object.keys(Bridges).map(function(v){
+	return parseInt(v, 10);
+})
 
-do {
-	// Create an intersection graph consisting of pairs of
-	// intersecting bridges
-	var graph = [];
-	for (var i = 0; i < Bridges.length; i++){
-		for (var j = i+1; j < Bridges.length; j++){
-			if (Bridges[i] === undefined || Bridges[j] === undefined)
-				break;
-			if (checkIntersect(Bridges[i], Bridges[j]))
-				// Push both bridge numbers -- they intersect with each other:
-				graph.push(Bridges[i].num, Bridges[j].num);
+// Create an intersection graph consisting of pairs of
+// intersecting bridges
+var graph = [];
+for (var i = 0; i < bridgeNums.length; i++){
+	for (var j = i+1; j < bridgeNums.length; j++){
+		if (checkIntersect(Bridges[bridgeNums[i]], Bridges[bridgeNums[j]]))
+			graph.push([bridgeNums[i], bridgeNums[j]]);
+	}
+}
+
+// From intersection graph, determine frequency of each bridge
+var bridgeFreq = {};
+graph.forEach(function(v){
+	if (bridgeFreq[v[0]] == null)
+		bridgeFreq[v[0]] = 1;
+	else
+		bridgeFreq[v[0]]++;
+	if (bridgeFreq[v[1]] == null)
+		bridgeFreq[v[1]] = 1;
+	else
+		bridgeFreq[v[1]]++;
+});
+
+while (Object.keys(bridgeFreq).length > 0){
+	// Take the bridge number that is most frequent
+	var removeNum = 0,
+	    freq = 0;
+
+	for (var bridge in bridgeFreq){
+		if (bridgeFreq[bridge] > freq){
+			removeNum = bridge;
+			freq = bridgeFreq[bridge];
 		}
 	}
 
-	if (graph.length == 0) break;
+	// Remove bridge from Bridges
+	delete Bridges[removeNum];
 
-	// Figure out the bridge number with the highest occurence
-	var modeMap = [],
-		maxEl = graph[0],
-		maxCnt = 1;
-
-	graph.forEach(function (v, i){
-		var el = graph[i];
-
-		if (modeMap[el] == null)
-			modeMap[el] =1;
-		else
-			modeMap[el]++;
-
-		if (modeMap[el] > maxCnt){
-			maxEl = el;
-			maxCnt = modeMap[el];
+	// Remove bridge from frequency based on intersection graph
+	graph.forEach(function(v){
+		if (v[0] == removeNum || v[1] == removeNum){
+			// If either bridge in an element of the graph contains the bridge
+			// that is being removed, decrement both elements in bridgeFreq
+			bridgeFreq[v[0]]--;
+			bridgeFreq[v[1]]--;
+			if (bridgeFreq[v[0]] == 0)
+				delete bridgeFreq[v[0]];
+			if (bridgeFreq[v[1]] == 0)
+				delete bridgeFreq[v[1]];
 		}
+	})
+
+
+	graph = graph.filter(function(v){
+		return v[0] != removeNum && v[1] != removeNum;
 	});
-
-	// Remove bridge:
-	removeBridge(maxEl);
-
-	// Repeat until there are no more intersections
-} while (graph.length != 0);
+}
 
 // Print the resulting bridges:
-Bridges.forEach(function(Bridge){
-	if (Bridge != undefined)
-		console.log(Bridge.num);
-})
+for (var bridge in Bridges){
+	console.log(bridge);
+}
