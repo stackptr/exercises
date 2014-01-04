@@ -17,9 +17,15 @@ fs.readFileSync(process.argv[2])
     	if (v == "") return;
 
     	var lists = v.split(";");
-    	var a = lists[0].split(","),
-    	    b = lists[1].split(","),
-    	    i = 0,
+    	var a = lists[0].split(",").map(function(v){
+            return parseInt(v, 10);
+        });
+    	
+        var b = lists[1].split(",").map(function(v){
+            return parseInt(v, 10);
+        });
+
+        var i = 0,
     	    j = 0,
     	    intersection = [];
 
