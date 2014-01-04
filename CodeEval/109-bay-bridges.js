@@ -45,7 +45,7 @@ function checkIntersect(Bridge1, Bridge2){
 
 	// If each pair of cross products have the same sign,
 	// no intersection occurs, return false:
-	return !(((crossA < 0) == (crossB < 0)) && ((crossC < 0) == (crossD < 0)));
+	return ((crossA * crossB < 0) && (crossC * crossD < 0));
 }
 
 // Parse input into bridge objects
@@ -77,66 +77,58 @@ fs.readFileSync(process.argv[2])
 // Check each pair of bridges to populate the intersection list
 var bridgeNums = Object.keys(Bridges).map(function(v){
 	return parseInt(v, 10);
-})
+});
+
 for (var i = 0; i < bridgeNums.length; i++){
 	for (var j = i+1; j < bridgeNums.length; j++){
 		if (checkIntersect(Bridges[bridgeNums[i]], Bridges[bridgeNums[j]])){
 			Bridges[bridgeNums[i]].intersections.push(bridgeNums[j]);
 			Bridges[bridgeNums[j]].intersections.push(bridgeNums[i]);
-			graph.push([bridgeNums[i], bridgeNums[j]]);
 		}
 	}
 }
 
-// From intersection graph, determine frequency of each bridge
-var bridgeFreq = {};
-graph.forEach(function(v){
-	if (bridgeFreq[v[0]] == null)
-		bridgeFreq[v[0]] = 1;
-	else
-		bridgeFreq[v[0]]++;
-	if (bridgeFreq[v[1]] == null)
-		bridgeFreq[v[1]] = 1;
-	else
-		bridgeFreq[v[1]]++;
-});
+var builtBridges = [];
 
-while (Object.keys(bridgeFreq).length > 0){
-	// Take the bridge number that is most frequent
-	var removeNum = 0,
-	    freq = 0;
+// First build all the bridges with no intersections
+for (var bridgeNum in Bridges){
+	if (Bridges[bridgeNum].intersections.length == 0){
+		builtBridges.push(bridgeNum);
+		delete Bridges[bridgeNum];
+	}
+}
 
-	for (var bridge in bridgeFreq){
-		if (bridgeFreq[bridge] > freq){
-			removeNum = bridge;
-			freq = bridgeFreq[bridge];
+// Then build the bridge with the fewest intersections, provided it does not
+// intersect with already built bridges.
+while (Object.keys(Bridges).length > 0){
+	// First find the fewest intersections
+	var currentMinInter = undefined,
+	    bridgeToBuild = 0;
+	for (var bridgeNum in Bridges){
+		var numIntersections = Bridges[bridgeNum].intersections.length;
+		if (currentMinInter == undefined || numIntersections < currentMinInter){
+			currentMinInter = numIntersections
+			bridgeToBuild = bridgeNum;
 		}
 	}
 
-	// Remove bridge from Bridges
-	delete Bridges[removeNum];
+	// Add bridge to built bridges list
+	builtBridges.push(bridgeToBuild);
+	delete Bridges[bridgeToBuild];
 
-	// Remove bridge from frequency based on intersection graph
-	graph.forEach(function(v){
-		if (v[0] == removeNum || v[1] == removeNum){
-			// If either bridge in an element of the graph contains the bridge
-			// that is being removed, decrement both elements in bridgeFreq
-			bridgeFreq[v[0]]--;
-			bridgeFreq[v[1]]--;
-			if (bridgeFreq[v[0]] == 0)
-				delete bridgeFreq[v[0]];
-			if (bridgeFreq[v[1]] == 0)
-				delete bridgeFreq[v[1]];
+	// Remove all unbuilt bridges that intersect with it
+	for (var bridgeNum in Bridges){
+		for (var i = 0; i < Bridges[bridgeNum].intersections.length; i++){
+			if (Bridges[bridgeNum].intersections[i] == bridgeToBuild){
+				delete Bridges[bridgeNum];
+				break;
+			}
 		}
-	})
-
-
-	graph = graph.filter(function(v){
-		return v[0] != removeNum && v[1] != removeNum;
-	});
+	}
 }
 
-// Print the resulting bridges:
-for (var bridge in Bridges){
-	console.log(bridge);
-}
+builtBridges.sort(function(a, b){
+	return a - b;
+}).forEach(function(v){
+	console.log(v);
+})
