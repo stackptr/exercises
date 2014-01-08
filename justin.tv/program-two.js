@@ -37,9 +37,8 @@ process.stdin.on('data', function(chunk){
 });
 
 process.stdin.on('end', function(){
-	// Split whitespace
-	data.trim()
-		.split(/\s+/)
+	data.trim()					// Trim whitespace
+		.split(/\s+/)			// Split on whitespace
 		.forEach(function(v){
 			// Handle non-numbers
 			for (var i = 0; i < v.length - 1; i++){
