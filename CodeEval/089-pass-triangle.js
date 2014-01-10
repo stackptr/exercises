@@ -11,6 +11,17 @@
 
 var fs = require('fs');
 
+// Make a graph consisting of elements with children
+
+function Element(value){
+	this.v = value;
+	this.dist;
+}
+
+Node.prototype.update = function(dist){
+	this.dist = dist;
+}
+
 var triangle = {
 	rows: [] // Hold triangle data
 }
