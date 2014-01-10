@@ -18,7 +18,7 @@ function Element(value){
 	this.dist;
 }
 
-Node.prototype.update = function(dist){
+Element.prototype.update = function(dist){
 	this.dist = dist;
 }
 
