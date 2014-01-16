@@ -18,13 +18,13 @@ fs.readFileSync(inputFile) 	// Returns contents of input file
   .forEach(processInput);
 
 // Takes string of space delimited numbers, outputs lowest unique number
-function processInput(line){
+function processInput(line, i){
 	if (line == "") return;
 
 	var input = line.split(',');
-	if(input[0].indexOf(input[1]) + input[1].length == input[0].length){
-		console.log(1);
-	} else {
-		console.log(0)
-	}
+	if (input[0].indexOf([input[1]]) != -1 &&
+		input[0].indexOf(input[1]) + input[1].length == input[0].length)
+		console.log("1");
+	else
+		console.log("0");
 }
