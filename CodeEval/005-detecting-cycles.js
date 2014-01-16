@@ -10,6 +10,21 @@
 
 var fs = require('fs');
 
+// Given an array v, return the string of cycled elements
+function detectCycle(v){
+    for (var i = 1; i < v.length; i++){ // Iterate through the elements in the array
+        for (var j = i-1; j >= 0; j--){ // Check the elements before the current one
+            if (v[i] == v[j]){
+                var a = v.slice(j, i);
+                var b = v.slice(i, i+i-j);
+                if (a.join() == b.join())
+                    return a.join(" ");
+            }
+        }
+    }
+    return "";
+}
+
 fs.readFileSync(process.argv[2])
     .toString()
     .split('\n')
@@ -20,33 +35,5 @@ fs.readFileSync(process.argv[2])
             return parseInt(v, 10); // Make sure array contents are numbers
         });
 
-        // Tortoise and hare algorithm
-        var tortoise = 1,
-            hare = 2;
-        while (v[tortoise] != v[hare]){
-            tortoise++;
-            hare += 2;
-        }
-
-        var mu = 0;
-        tortoise = 0;
-
-        while (v[tortoise] != v[hare]){
-            tortoise++;
-            hare++;
-            mu++;
-        }
-
-        var lam = 1;
-        hare = v[tortoise];
-
-        while (v[tortoise] != v[hare]){
-            hare++;
-            lam++;
-        }
-
-        if (mu >= v.length)
-            console.log('');
-        else 
-            console.log(v.slice(mu, mu+lam).join(" "));
+        console.log(detectCycle(v));
     });
