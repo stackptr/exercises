@@ -13,13 +13,40 @@ var fs = require('fs');
 fs.readFileSync(process.argv[2])
     .toString()
     .split('\n')
-    .forEach(function(str){
+    .forEach(function(v){
     	if (v == "") return;
 
     	v = v.split(" ").map(function(v){
             return parseInt(v, 10); // Make sure array contents are numbers
-        }).unshift(0); // Put 0 at beginning to make array 1-indexed
+        });
 
-        // Tortoise and hare algorithm 
-        // To be implemented
+        // Tortoise and hare algorithm
+        var tortoise = 1,
+            hare = 2;
+        while (v[tortoise] != v[hare]){
+            tortoise++;
+            hare += 2;
+        }
+
+        var mu = 0;
+        tortoise = 0;
+
+        while (v[tortoise] != v[hare]){
+            tortoise++;
+            hare++;
+            mu++;
+        }
+
+        var lam = 1;
+        hare = v[tortoise];
+
+        while (v[tortoise] != v[hare]){
+            hare++;
+            lam++;
+        }
+
+        if (mu >= v.length)
+            console.log('');
+        else 
+            console.log(v.slice(mu, mu+lam).join(" "));
     });
