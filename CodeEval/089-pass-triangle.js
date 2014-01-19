@@ -11,56 +11,68 @@
 
 var fs = require('fs');
 
-// Make a graph consisting of elements with children
-
-function Element(value){
-	this.v = value;
-	this.dist;
+// Each node of the triangle has a value and a total value of the sum of the highest parents before it
+function Node(value, total){
+	this.value = value;
+	this.total = total;
 }
 
-Element.prototype.update = function(dist){
-	this.dist = dist;
+Node.prototype.sum = function(){
+	return this.value + this.total;
+};
+
+function Triangle(){
+	this.rows = [];
 }
 
-var triangle = {
-	rows: [] // Hold triangle data
-}
 
-triangle.readLine = function(line){
+Triangle.prototype.push = function(line, num){
 	if (line == "") return;
 
-	// Add to next row:
-	this.rows.push(
-		line.split(" ").map(function(v){
-			return parseInt(v, 10);
-		})
-	);
-}
-
-// Naive traversal
-triangle.traverse = function(){
-	var pos = 0,
-		row = 0,
-		result = 0;
-
-	// For each position i, we can choose nextrow[i] or nextrow[i+1]
-	while (row != this.rows.length){
-		var nextRow = this.rows[row];
-		if (nextRow[pos+1] > nextRow[pos])
-			pos++ // Only need to change if moving left
-
-		result += nextRow[pos];
-		row++;
+	if (num == 0){ // Trivial case, only one node to consider
+		this.rows.push([
+			new Node(parseInt(line, 10), 0)
+		]);
+		return;
 	}
 
-	return result;
+	// Explode the elements
+	var arr = line.trim().split(" ").map(function(v){
+		return parseInt(v, 10);
+	});
+
+	// Get the last row
+	var lastRow = this.rows[num-1];
+
+	// Build current row
+	var row = [];
+	// Iterate through each element. Choose as its total the highest total of either possible parent
+	arr.forEach(function(v, i) {
+		if (i == 0)
+			row.push(new Node(v, lastRow[i].sum()));
+		else if (i == arr.length-1)
+			row.push(new Node(v, lastRow[i-1].sum()));
+		else
+			row.push(new Node(v, Math.max(lastRow[i].sum(), lastRow[i-1].sum())));
+	});
+	this.rows.push(row);
 }
+
+var triangle = new Triangle();
 
 fs.readFileSync(process.argv[2])
 	.toString()
 	.split('\n')
-	.forEach(function(v){
-		return triangle.readLine(v); // Why can't this be passed directly to forEach?
-	});
+	.forEach(triangle.push, triangle);
 
-console.log(triangle.traverse());
+// Scan the last row
+var lastRow = triangle.rows[triangle.rows.length-1];
+
+// Print the greatest sum
+var greatest = 0;
+lastRow.forEach(function(v){
+	if (v.sum() > greatest)
+		greatest = v.sum();
+});
+
+console.log(greatest);
